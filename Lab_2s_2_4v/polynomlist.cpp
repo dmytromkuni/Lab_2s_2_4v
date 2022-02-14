@@ -5,7 +5,7 @@
 
 void polmult::Pol::printInfo()
 {
-	std::cout << this->coef << "*x^" << this->pow << " ";
+	std::cout << this->coef << "*x^" << this->pow;
 }
 
 polmult::Pol::Pol(int coef, int pow)
@@ -19,7 +19,20 @@ polmult::PolList::Node::Node(Pol* info)
 	this->info = info;
 }
 
-void polmult::PolList::removeKebab()
+void polmult::PolList::printList()
+{
+	Node* iter1 = head;
+	while (iter1->next)
+	{
+		iter1->info->printInfo();
+		std::cout << " + ";
+		iter1 = iter1->next;
+	}
+	iter1->info->printInfo();
+	std::cout << "\n";
+}
+
+void polmult::PolList::removeDup()
 {
 	Node* iter1 = head;
 	Node* iter2 = head;
@@ -27,16 +40,15 @@ void polmult::PolList::removeKebab()
 	while (iter1->next)
 	{
 		iter2 = iter1;
-		while (iter2->next)
+		while (iter2 && iter2->next)
 		{
 			//main LOGIC
-			if (iter2->info->pow == iter1->info->pow)
+			if (iter2->next->info->pow == iter1->info->pow)
 			{
-				iter1->info->coef += iter2->info->coef;
-				temp = iter2;
+				iter1->info->coef = iter1->info->coef + iter2->next->info->coef;
+				temp = iter2->next;
 
-				(iter2->prev)->next = iter2->next;
-				iter2->next->prev = iter2->prev;
+				iter2->next = iter2->next->next;
 				iter2 = iter2->next;
 
 				delete(temp);
@@ -50,8 +62,7 @@ void polmult::PolList::removeKebab()
 
 void polmult::PolList::add(int coef, int pow)
 {
-	Pol temp(coef, pow);
-	Pol* to_add = &temp;
+	Pol* to_add = new Pol(coef, pow);
 	Node* node = new Node(to_add);
 	if (head == nullptr)
 	{
@@ -60,20 +71,17 @@ void polmult::PolList::add(int coef, int pow)
 	}
 	else
 	{
-		node->prev = tail;
 		tail->next = node;
 		tail = node;
 	}
 }
-
 
 polmult::PolList polmult::multiply(PolList list1, PolList list2)
 {
 	PolList result;
 	if (!list1.tail || !list2.tail)
 	{
-		Pol temp(0, 0);
-		Pol* to_add = &temp;
+		Pol* to_add = new Pol(0, 0);
 		PolList::Node* node = new PolList::Node(to_add);
 		result.head = node;
 		result.tail = node;
@@ -87,7 +95,7 @@ polmult::PolList polmult::multiply(PolList list1, PolList list2)
 		{
 			while (iter2)
 			{
-				int coef = iter1->info->coef + iter2->info->coef;
+				int coef = iter1->info->coef * iter2->info->coef;
 				int pow = iter1->info->pow + iter2->info->pow;
 				result.add(coef, pow);
 				iter2 = iter2->next;
@@ -95,7 +103,7 @@ polmult::PolList polmult::multiply(PolList list1, PolList list2)
 			iter1 = iter1->next;
 			iter2 = list2.head;
 		}
-		result.removeKebab();
+		result.removeDup();
 		return result;
 	}
 }
