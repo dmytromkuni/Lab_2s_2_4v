@@ -1,7 +1,15 @@
 #include "polynomlist.h"
 
+#include <fstream>
 #include <string>
+#include <cstring>
 #include <iostream>
+
+void append(char* s, char c) {
+	int len = strlen(s);
+	s[len] = c;
+	s[len + 1] = '\0';
+}
 
 void polmult::Pol::printInfo()
 {
@@ -106,4 +114,50 @@ polmult::PolList polmult::multiply(PolList list1, PolList list2)
 		result.removeDup();
 		return result;
 	}
+}
+
+polmult::PolList polmult::read(char* const NAME)
+{
+	std::ifstream out(NAME, std::ifstream::in);
+	PolList result;
+
+	const int SIZE = 8;
+	bool b_coef = true;
+	char buffer[SIZE];
+	char coef[8] = "";
+	char pow[SIZE] = "";
+	int i_coef = 0;
+	int i_pow = 0;
+
+	while (!out.eof())
+	{
+		out.read((char*)&buffer, sizeof(buffer));
+		for (int i = 0; i < SIZE - 1; i++)
+		{
+			if (buffer[i] == '+' || buffer[i] == '-')
+			{
+				b_coef = true;
+				i_pow = std::stoi(pow);
+				memset(pow, 0, sizeof(pow));
+				result.add(i_coef, i_pow);
+				append(coef, buffer[i]);
+			}
+			else if (buffer[i] == 'x')
+			{
+				b_coef = false;
+				i_coef = std::stoi(coef);
+				memset(coef, 0, sizeof(coef));
+			}
+			else if (isdigit(buffer[i]) && b_coef) append(coef, buffer[i]);
+			else if (isdigit(buffer[i]) && !b_coef) append(pow, buffer[i]);
+			else if (buffer[i] == ' ' || b_coef == '^' || buffer[i] == 'x') continue;
+			else
+			{
+				result.add(i_coef, i_pow);
+				return result;
+			}
+		}
+	}
+
+	return result;
 }

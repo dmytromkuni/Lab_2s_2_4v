@@ -24,4 +24,5 @@ namespace polmult
 		void add(int coef, int pow);
 	};
 	PolList multiply(PolList list1, PolList list2);
+	PolList read(char* const NAME);
 }
